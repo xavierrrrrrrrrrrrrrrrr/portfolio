@@ -10,7 +10,7 @@ import { ProjectsForm } from './components/ProjectsForm';
 import { AchievementsForm } from './components/AchievementsForm';
 import { SocialLinksForm } from './components/SocialLinksForm';
 import { ReviewAndExport } from './components/ReviewAndExport';
-import { PortfolioGeneration } from './components/PortfolioGeneration';
+import { EnhancedPortfolioGeneration } from './components/EnhancedPortfolioGeneration';
 import { WelcomePage } from './components/WelcomePage';
 import {
   PortfolioData,
@@ -122,7 +122,7 @@ function App() {
     const portfolioData = generatePortfolioData();
 
     try {
-      const response = await fetch('http://localhost:12000/api/portfolio', {
+      const response = await fetch('/api/portfolio', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -165,7 +165,7 @@ function App() {
       case 6:
         return <ReviewAndExport data={generatePortfolioData()} onExport={handleSave} />;
       case 7:
-        return <PortfolioGeneration data={generatePortfolioData()} />;
+        return <EnhancedPortfolioGeneration data={generatePortfolioData()} />;
       default:
         return null;
     }

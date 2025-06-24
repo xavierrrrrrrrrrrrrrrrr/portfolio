@@ -1,0 +1,10 @@
+
+> portfolio-client@1.0.0 dev
+> vite --port 12001 --host 0.0.0.0
+
+
+  VITE v5.4.19  ready in 187 ms
+
+  ➜  Local:   http://localhost:12001/
+  ➜  Network: http://10.2.49.14:12001/
+  ➜  press h + enter to show help

@@ -66,6 +66,54 @@ export interface ConversationContext {
   };
 }
 
+export interface GenerationHistory {
+  id: string;
+  portfolioData: PortfolioData;
+  options: GenerationOptions;
+  result: GeneratedPortfolio;
+  timestamp: number;
+  cost?: {
+    amount: number;
+    currency: string;
+    breakdown: {
+      inputTokens: number;
+      outputTokens: number;
+      inputCost: number;
+      outputCost: number;
+    };
+  };
+  performance: {
+    generationTime: number;
+    tokensPerSecond: number;
+    quality: {
+      accessibility: number;
+      performance: number;
+      seo: number;
+    };
+  };
+}
+
+export interface CostEstimate {
+  estimatedCost: number;
+  currency: string;
+  breakdown: {
+    inputTokens: number;
+    outputTokens: number;
+    inputCost: number;
+    outputCost: number;
+  };
+  confidence: number; // 0-1 score
+}
+
+export interface ModelRecommendation {
+  model: string;
+  provider: string;
+  score: number;
+  reasoning: string;
+  estimatedCost: number;
+  estimatedTime: number;
+}
+
 export interface ProviderConfig {
   name: string;
   apiKey?: string;
@@ -78,6 +126,21 @@ export interface ProviderConfig {
     requestsPerMinute: number;
     tokensPerMinute: number;
   };
+  pricing?: {
+    inputTokens: number; // cost per 1K input tokens
+    outputTokens: number; // cost per 1K output tokens
+    currency: string;
+  };
+  capabilities: {
+    codeGeneration: boolean;
+    multimodal: boolean;
+    functionCalling: boolean;
+    jsonMode: boolean;
+  };
+  performance: {
+    averageLatency: number; // ms
+    reliability: number; // 0-1 score
+  };
 }
 
 class LLMService extends EventEmitter {
@@ -86,6 +149,8 @@ class LLMService extends EventEmitter {
   private conversations: Map<string, ConversationContext> = new Map();
   private cache: Map<string, any> = new Map();
   private rateLimiters: Map<string, { requests: number[], tokens: number[], lastReset: number }> = new Map();
+  private generationHistory: Map<string, GenerationHistory> = new Map();
+  private performanceMetrics: Map<string, { latencies: number[], successes: number, failures: number }> = new Map();
 
   constructor() {
     super();
@@ -108,7 +173,22 @@ class LLMService extends EventEmitter {
           supportedModels: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'],
           maxTokens: 4096,
           supportsStreaming: true,
-          rateLimits: { requestsPerMinute: 500, tokensPerMinute: 150000 }
+          rateLimits: { requestsPerMinute: 500, tokensPerMinute: 150000 },
+          pricing: {
+            inputTokens: 0.005, // $5 per 1K input tokens
+            outputTokens: 0.015, // $15 per 1K output tokens
+            currency: 'USD'
+          },
+          capabilities: {
+            codeGeneration: true,
+            multimodal: true,
+            functionCalling: true,
+            jsonMode: true
+          },
+          performance: {
+            averageLatency: 2000,
+            reliability: 0.99
+          }
         });
       }
 
@@ -123,7 +203,22 @@ class LLMService extends EventEmitter {
           supportedModels: ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-pro'],
           maxTokens: 8192,
           supportsStreaming: true,
-          rateLimits: { requestsPerMinute: 60, tokensPerMinute: 32000 }
+          rateLimits: { requestsPerMinute: 60, tokensPerMinute: 32000 },
+          pricing: {
+            inputTokens: 0.00125, // $1.25 per 1K input tokens
+            outputTokens: 0.005, // $5 per 1K output tokens
+            currency: 'USD'
+          },
+          capabilities: {
+            codeGeneration: true,
+            multimodal: true,
+            functionCalling: true,
+            jsonMode: true
+          },
+          performance: {
+            averageLatency: 1500,
+            reliability: 0.97
+          }
         });
       }
 
@@ -140,7 +235,22 @@ class LLMService extends EventEmitter {
           supportedModels: ['claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022', 'claude-3-opus-20240229'],
           maxTokens: 4096,
           supportsStreaming: true,
-          rateLimits: { requestsPerMinute: 50, tokensPerMinute: 40000 }
+          rateLimits: { requestsPerMinute: 50, tokensPerMinute: 40000 },
+          pricing: {
+            inputTokens: 0.003, // $3 per 1K input tokens
+            outputTokens: 0.015, // $15 per 1K output tokens
+            currency: 'USD'
+          },
+          capabilities: {
+            codeGeneration: true,
+            multimodal: true,
+            functionCalling: true,
+            jsonMode: false
+          },
+          performance: {
+            averageLatency: 2200,
+            reliability: 0.98
+          }
         });
       }
 
@@ -157,7 +267,22 @@ class LLMService extends EventEmitter {
           supportedModels: ['llama3.1:8b', 'llama3.1:70b', 'codellama:7b', 'mistral:7b'],
           maxTokens: 4096,
           supportsStreaming: true,
-          rateLimits: { requestsPerMinute: 1000, tokensPerMinute: 100000 }
+          rateLimits: { requestsPerMinute: 1000, tokensPerMinute: 100000 },
+          pricing: {
+            inputTokens: 0, // Free local hosting
+            outputTokens: 0,
+            currency: 'USD'
+          },
+          capabilities: {
+            codeGeneration: true,
+            multimodal: false,
+            functionCalling: false,
+            jsonMode: true
+          },
+          performance: {
+            averageLatency: 3000,
+            reliability: 0.90
+          }
         });
       }
 
@@ -186,7 +311,22 @@ class LLMService extends EventEmitter {
           ],
           maxTokens: 4096,
           supportsStreaming: true,
-          rateLimits: { requestsPerMinute: 200, tokensPerMinute: 100000 }
+          rateLimits: { requestsPerMinute: 200, tokensPerMinute: 100000 },
+          pricing: {
+            inputTokens: 0.003, // Average pricing across models
+            outputTokens: 0.015,
+            currency: 'USD'
+          },
+          capabilities: {
+            codeGeneration: true,
+            multimodal: true,
+            functionCalling: true,
+            jsonMode: true
+          },
+          performance: {
+            averageLatency: 2500,
+            reliability: 0.95
+          }
         });
       }
 
@@ -200,7 +340,22 @@ class LLMService extends EventEmitter {
           supportedModels: ['command-r-plus', 'command-r', 'command'],
           maxTokens: 4096,
           supportsStreaming: true,
-          rateLimits: { requestsPerMinute: 100, tokensPerMinute: 50000 }
+          rateLimits: { requestsPerMinute: 100, tokensPerMinute: 50000 },
+          pricing: {
+            inputTokens: 0.003,
+            outputTokens: 0.015,
+            currency: 'USD'
+          },
+          capabilities: {
+            codeGeneration: true,
+            multimodal: false,
+            functionCalling: true,
+            jsonMode: true
+          },
+          performance: {
+            averageLatency: 2000,
+            reliability: 0.94
+          }
         });
       }
 
@@ -214,7 +369,22 @@ class LLMService extends EventEmitter {
           supportedModels: ['mistral-large-latest', 'mistral-medium-latest', 'mistral-small-latest'],
           maxTokens: 4096,
           supportsStreaming: true,
-          rateLimits: { requestsPerMinute: 100, tokensPerMinute: 50000 }
+          rateLimits: { requestsPerMinute: 100, tokensPerMinute: 50000 },
+          pricing: {
+            inputTokens: 0.004,
+            outputTokens: 0.012,
+            currency: 'USD'
+          },
+          capabilities: {
+            codeGeneration: true,
+            multimodal: false,
+            functionCalling: true,
+            jsonMode: true
+          },
+          performance: {
+            averageLatency: 1800,
+            reliability: 0.96
+          }
         });
       }
 
@@ -422,12 +592,36 @@ class LLMService extends EventEmitter {
       },
     };
 
+    // Record performance metrics
+    this.recordPerformanceMetrics(selectedProvider, generationTime, true);
+
+    // Calculate cost if pricing is available
+    const costEstimate = this.estimateCost(portfolioData, { ...options, provider: selectedProvider as any });
+    const actualCost = costEstimate.estimatedCost; // In a real implementation, this would come from the API response
+
+    // Save to generation history
+    const historyId = this.saveGenerationHistory(
+      portfolioData,
+      { ...options, provider: selectedProvider as any },
+      result,
+      {
+        amount: actualCost,
+        currency: costEstimate.currency,
+        breakdown: costEstimate.breakdown
+      },
+      {
+        generationTime,
+        tokensPerSecond: enhancedContent.tokensUsed ? (enhancedContent.tokensUsed / (generationTime / 1000)) : 0,
+        quality
+      }
+    );
+
     // Cache the result
     this.cache.set(cacheKey, result);
 
     this.emit('progress', {
       type: 'complete',
-      data: { result },
+      data: { result, historyId, cost: actualCost },
       timestamp: Date.now()
     });
 
@@ -982,6 +1176,285 @@ Return ONLY valid JSON in this exact format:
 
       archive.finalize();
     });
+  }
+
+  // Enhanced methods for modern AI code editor experience
+
+  public estimateCost(portfolioData: PortfolioData, options: GenerationOptions): CostEstimate {
+    const config = this.providerConfigs.get(options.provider);
+    if (!config?.pricing) {
+      return {
+        estimatedCost: 0,
+        currency: 'USD',
+        breakdown: { inputTokens: 0, outputTokens: 0, inputCost: 0, outputCost: 0 },
+        confidence: 0
+      };
+    }
+
+    // Estimate token usage based on portfolio complexity
+    const baseInputTokens = 1000; // Base prompt tokens
+    const portfolioComplexity = this.calculatePortfolioComplexity(portfolioData);
+    const estimatedInputTokens = baseInputTokens + portfolioComplexity * 200;
+    const estimatedOutputTokens = Math.min(options.maxTokens || config.maxTokens, 3000);
+
+    const inputCost = (estimatedInputTokens / 1000) * config.pricing.inputTokens;
+    const outputCost = (estimatedOutputTokens / 1000) * config.pricing.outputTokens;
+
+    return {
+      estimatedCost: inputCost + outputCost,
+      currency: config.pricing.currency,
+      breakdown: {
+        inputTokens: estimatedInputTokens,
+        outputTokens: estimatedOutputTokens,
+        inputCost,
+        outputCost
+      },
+      confidence: 0.8 // High confidence for estimation
+    };
+  }
+
+  public getModelRecommendations(portfolioData: PortfolioData, requirements?: {
+    maxCost?: number;
+    maxTime?: number;
+    prioritizeQuality?: boolean;
+  }): ModelRecommendation[] {
+    const recommendations: ModelRecommendation[] = [];
+    const complexity = this.calculatePortfolioComplexity(portfolioData);
+
+    for (const [providerName, config] of this.providerConfigs) {
+      if (!this.providers.has(providerName)) continue;
+
+      for (const model of config.supportedModels) {
+        const options: GenerationOptions = {
+          provider: providerName as any,
+          style: 'minimal',
+          outputPath: '',
+          model
+        };
+
+        const costEstimate = this.estimateCost(portfolioData, options);
+        const estimatedTime = config.performance.averageLatency + (complexity * 100);
+
+        // Skip if exceeds requirements
+        if (requirements?.maxCost && costEstimate.estimatedCost > requirements.maxCost) continue;
+        if (requirements?.maxTime && estimatedTime > requirements.maxTime) continue;
+
+        let score = config.performance.reliability * 0.4;
+        
+        // Adjust score based on capabilities
+        if (config.capabilities.codeGeneration) score += 0.2;
+        if (config.capabilities.jsonMode) score += 0.1;
+        
+        // Adjust for cost efficiency
+        score += Math.max(0, (1 - costEstimate.estimatedCost / 0.1)) * 0.2;
+        
+        // Adjust for speed
+        score += Math.max(0, (1 - estimatedTime / 5000)) * 0.1;
+
+        recommendations.push({
+          model,
+          provider: providerName,
+          score,
+          reasoning: this.generateRecommendationReasoning(config, costEstimate, estimatedTime, complexity),
+          estimatedCost: costEstimate.estimatedCost,
+          estimatedTime
+        });
+      }
+    }
+
+    return recommendations.sort((a, b) => b.score - a.score).slice(0, 5);
+  }
+
+  public getGenerationHistory(limit: number = 10): GenerationHistory[] {
+    return Array.from(this.generationHistory.values())
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, limit);
+  }
+
+  public getGenerationById(id: string): GenerationHistory | null {
+    return this.generationHistory.get(id) || null;
+  }
+
+  public regenerateFromHistory(historyId: string, modifications?: Partial<GenerationOptions>): Promise<GeneratedPortfolio> {
+    const history = this.generationHistory.get(historyId);
+    if (!history) {
+      throw new Error('Generation history not found');
+    }
+
+    const options = { ...history.options, ...modifications };
+    return this.generatePortfolio(history.portfolioData, options);
+  }
+
+  public getProviderHealthStatus(): Record<string, {
+    status: 'healthy' | 'degraded' | 'down';
+    latency: number;
+    successRate: number;
+    lastChecked: number;
+  }> {
+    const status: Record<string, any> = {};
+
+    for (const [provider, metrics] of this.performanceMetrics) {
+      const recentLatencies = metrics.latencies.slice(-10);
+      const avgLatency = recentLatencies.reduce((a, b) => a + b, 0) / recentLatencies.length || 0;
+      const totalRequests = metrics.successes + metrics.failures;
+      const successRate = totalRequests > 0 ? metrics.successes / totalRequests : 1;
+
+      let healthStatus: 'healthy' | 'degraded' | 'down' = 'healthy';
+      if (successRate < 0.8 || avgLatency > 10000) healthStatus = 'degraded';
+      if (successRate < 0.5 || avgLatency > 30000) healthStatus = 'down';
+
+      status[provider] = {
+        status: healthStatus,
+        latency: avgLatency,
+        successRate,
+        lastChecked: Date.now()
+      };
+    }
+
+    return status;
+  }
+
+  public async refineGeneration(
+    originalResult: GeneratedPortfolio,
+    refinementPrompt: string,
+    options: GenerationOptions
+  ): Promise<GeneratedPortfolio> {
+    // Create a refinement context
+    const contextId = this.createConversationContext(options.provider, options.model);
+    const context = this.conversations.get(contextId)!;
+
+    // Add the original generation and refinement request to context
+    context.messages.push(
+      {
+        role: 'assistant',
+        content: `Generated portfolio with metadata: ${JSON.stringify(originalResult.metadata)}`,
+        timestamp: Date.now()
+      },
+      {
+        role: 'user',
+        content: `Please refine the portfolio based on this feedback: ${refinementPrompt}`,
+        timestamp: Date.now()
+      }
+    );
+
+    // Generate refined version
+    return this.generatePortfolio(
+      {} as PortfolioData, // Will be reconstructed from context
+      { ...options, contextId }
+    );
+  }
+
+  private calculatePortfolioComplexity(portfolioData: PortfolioData): number {
+    let complexity = 0;
+    
+    // Base complexity
+    complexity += 1;
+    
+    // Projects complexity
+    complexity += (portfolioData.projects?.length || 0) * 2;
+    complexity += (portfolioData.projects || []).reduce((sum, p) => sum + (p.technologies?.length || 0), 0) * 0.5;
+    
+    // Education complexity
+    complexity += (portfolioData.education?.length || 0);
+    
+    // Achievements complexity
+    complexity += (portfolioData.achievements?.length || 0) * 1.5;
+    
+    // Social links complexity
+    complexity += Object.keys(portfolioData.socialLinks || {}).length * 0.5;
+    
+    // Content length complexity
+    complexity += Math.min((portfolioData.aboutMe?.length || 0) / 100, 5);
+    
+    return Math.round(complexity);
+  }
+
+  private generateRecommendationReasoning(
+    config: ProviderConfig,
+    costEstimate: CostEstimate,
+    estimatedTime: number,
+    complexity: number
+  ): string {
+    const reasons = [];
+    
+    if (config.performance.reliability > 0.95) {
+      reasons.push('highly reliable');
+    }
+    
+    if (costEstimate.estimatedCost < 0.05) {
+      reasons.push('cost-effective');
+    }
+    
+    if (estimatedTime < 3000) {
+      reasons.push('fast generation');
+    }
+    
+    if (config.capabilities.codeGeneration) {
+      reasons.push('excellent for code generation');
+    }
+    
+    if (complexity > 5 && config.maxTokens > 4000) {
+      reasons.push('handles complex portfolios well');
+    }
+
+    return reasons.length > 0 
+      ? `Recommended because it's ${reasons.join(', ')}.`
+      : 'Good general-purpose option for portfolio generation.';
+  }
+
+  private recordPerformanceMetrics(provider: string, latency: number, success: boolean) {
+    if (!this.performanceMetrics.has(provider)) {
+      this.performanceMetrics.set(provider, { latencies: [], successes: 0, failures: 0 });
+    }
+
+    const metrics = this.performanceMetrics.get(provider)!;
+    metrics.latencies.push(latency);
+    
+    // Keep only recent latencies (last 100)
+    if (metrics.latencies.length > 100) {
+      metrics.latencies = metrics.latencies.slice(-100);
+    }
+
+    if (success) {
+      metrics.successes++;
+    } else {
+      metrics.failures++;
+    }
+  }
+
+  private saveGenerationHistory(
+    portfolioData: PortfolioData,
+    options: GenerationOptions,
+    result: GeneratedPortfolio,
+    cost?: any,
+    performance?: any
+  ) {
+    const historyId = `gen_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const history: GenerationHistory = {
+      id: historyId,
+      portfolioData,
+      options,
+      result,
+      timestamp: Date.now(),
+      cost,
+      performance: performance || {
+        generationTime: result.metadata.generationTime || 0,
+        tokensPerSecond: result.metadata.tokensUsed ? 
+          (result.metadata.tokensUsed / ((result.metadata.generationTime || 1) / 1000)) : 0,
+        quality: result.metadata.quality || { accessibility: 0, performance: 0, seo: 0 }
+      }
+    };
+
+    this.generationHistory.set(historyId, history);
+
+    // Keep only recent history (last 100 generations)
+    if (this.generationHistory.size > 100) {
+      const oldestKey = Array.from(this.generationHistory.keys())[0];
+      this.generationHistory.delete(oldestKey);
+    }
+
+    return historyId;
   }
 }
 
