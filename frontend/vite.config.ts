@@ -12,7 +12,11 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 12002,
     proxy: {
-      '/api': 'http://localhost:12000', // Routes like /api/generate → server at port 12000
+      '/api': {
+        target: 'http://localhost:12000',
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
 });

@@ -178,6 +178,114 @@ router.get('/providers/:provider/status', (req: Request, res: Response) => {
   }
 });
 
+// Route to get cost estimation
+router.post('/estimate-cost', (req: Request, res: Response) => {
+  try {
+    const portfolioData = req.body.portfolioData;
+    const options = req.body.options || { 
+      provider: 'openai', 
+      model: 'gpt-4', 
+      temperature: 0.7, 
+      maxTokens: 2000 
+    };
+    
+    const estimate = llmService.estimateCost(portfolioData, options);
+    res.json(estimate);
+  } catch (error) {
+    console.error('Error estimating cost:', error);
+    res.status(500).json({ error: 'Failed to estimate cost' });
+  }
+});
+
+// Route to get model recommendations
+router.post('/recommendations', (req: Request, res: Response) => {
+  try {
+    const portfolioData = req.body.portfolioData;
+    const requirements = req.body.requirements;
+    
+    const recommendations = llmService.getModelRecommendations(portfolioData, requirements);
+    res.json({ recommendations });
+  } catch (error) {
+    console.error('Error getting recommendations:', error);
+    res.status(500).json({ error: 'Failed to get recommendations' });
+  }
+});
+
+// Route to get generation history
+router.get('/history', (req: Request, res: Response) => {
+  try {
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+    const history = llmService.getGenerationHistory(limit);
+    res.json({ history });
+  } catch (error) {
+    console.error('Error getting history:', error);
+    res.status(500).json({ error: 'Failed to get generation history' });
+  }
+});
+
+// Route to get specific generation from history
+router.get('/history/:id', (req: Request, res: Response) => {
+  try {
+    const id = req.params.id;
+    const generation = llmService.getGenerationById(id);
+    
+    if (!generation) {
+      return res.status(404).json({ error: 'Generation not found' });
+    }
+    
+    res.json(generation);
+  } catch (error) {
+    console.error('Error getting generation:', error);
+    res.status(500).json({ error: 'Failed to get generation' });
+  }
+});
+
+// Route to regenerate from history
+router.post('/history/:id/regenerate', async (req: Request, res: Response) => {
+  try {
+    const historyId = req.params.id;
+    const modifications = req.body.modifications || {};
+    
+    const result = await llmService.regenerateFromHistory(historyId, modifications);
+    res.json({
+      success: true,
+      portfolio: result,
+      message: 'Portfolio regenerated successfully'
+    });
+  } catch (error) {
+    console.error('Error regenerating from history:', error);
+    res.status(500).json({ error: 'Failed to regenerate portfolio' });
+  }
+});
+
+// Route to get provider health status
+router.get('/health', (req: Request, res: Response) => {
+  try {
+    const healthStatus = llmService.getProviderHealthStatus();
+    res.json({ providers: healthStatus });
+  } catch (error) {
+    console.error('Error getting health status:', error);
+    res.status(500).json({ error: 'Failed to get health status' });
+  }
+});
+
+// Route to refine a generation
+router.post('/refine', async (req: Request, res: Response) => {
+  try {
+    const { originalResult, refinementPrompt, options } = req.body;
+    
+    const refinedResult = await llmService.refineGeneration(originalResult, refinementPrompt, options);
+    res.json({
+      success: true,
+      portfolio: refinedResult,
+      message: 'Portfolio refined successfully'
+    });
+  } catch (error) {
+    console.error('Error refining portfolio:', error);
+    res.status(500).json({ error: 'Failed to refine portfolio' });
+  }
+});
+
 // Route to preview a style without generating full portfolio
 router.post('/preview', async (req: Request, res: Response) => {
   try {

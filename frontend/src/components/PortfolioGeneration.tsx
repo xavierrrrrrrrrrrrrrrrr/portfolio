@@ -87,7 +87,7 @@ export const PortfolioGeneration: React.FC<PortfolioGenerationProps> = ({ data }
   React.useEffect(() => {
     const fetchProviders = async () => {
       try {
-        const response = await fetch('http://localhost:12000/api/generate/providers');
+        const response = await fetch('/api/generate/providers');
         const data = await response.json();
         setAvailableProviders(data.providers || []);
         
@@ -146,7 +146,7 @@ export const PortfolioGeneration: React.FC<PortfolioGenerationProps> = ({ data }
       maxTokens: maxTokens.toString()
     });
 
-    const response = await fetch(`http://localhost:12000/api/generate/stream?${params}`, {
+    const response = await fetch(`/api/generate/stream?${params}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -205,7 +205,7 @@ export const PortfolioGeneration: React.FC<PortfolioGenerationProps> = ({ data }
       maxTokens: maxTokens.toString()
     });
     
-    const response = await fetch(`http://localhost:12000/api/generate?${params}`, {
+    const response = await fetch(`/api/generate?${params}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -227,7 +227,7 @@ export const PortfolioGeneration: React.FC<PortfolioGenerationProps> = ({ data }
     if (!generationResponse) return;
     
     // Create a link to download the ZIP file
-    const downloadUrl = `http://localhost:12000${generationResponse.downloadUrl}`;
+    const downloadUrl = generationResponse.downloadUrl;
     window.open(downloadUrl, '_blank');
   };
 

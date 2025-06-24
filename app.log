@@ -1,0 +1,21 @@
+Server started with PID 35542
+Frontend started with PID 35656
+Server running at: http://localhost:12000
+Frontend running at: http://localhost:12002
+API endpoints:
+  - Save portfolio: POST http://localhost:12000/api/portfolio
+  - Generate portfolio: POST http://localhost:12000/api/generate
+  - List generated portfolios: GET http://localhost:12000/api/generate/list
+  - Download portfolio: GET http://localhost:12000/api/generate/download/:filename
+
+LLM Configuration:
+  - OpenAI: Not configured (will use template fallback)
+  - Gemini: Configured
+  - Claude: Not configured (will use template fallback)
+  - Ollama: Not configured (will use template fallback)
+  - OpenRouter: Configured (supports multiple models)
+  - DeepSeek: Not configured (will use template fallback)
+
+Press Ctrl+C to stop both processes
+Terminated
+Terminated

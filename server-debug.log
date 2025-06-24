@@ -1,0 +1,86 @@
+
+> server@1.0.0 dev
+> ts-node-dev --respawn --clear server.ts
+
+[INFO] 16:31:26 ts-node-dev ver. 2.0.0 (using ts-node ver. 10.9.2, typescript ver. 5.8.3)
+cInitialized 0 LLM providers
+Starting server on port 12000
+🚀 Server listening at http://localhost:12000
+💼 Portfolio data will be saved to /workspace/portfolio/server/data
+🤖 LLM portfolio generation available at /api/generate
+2025-06-24T16:31:34.313Z - POST /api/generate/estimate-cost
+2025-06-24T16:31:40.569Z - GET /api/generate/providers
+2025-06-24T16:31:46.583Z - GET /api/generate/providers
+2025-06-24T16:31:57.963Z - POST /api/generate/recommendations
+Error getting recommendations: TypeError: Cannot read properties of undefined (reading 'length')
+    at LLMService.calculatePortfolioComplexity (/workspace/portfolio/server/services/llm.ts:1367:50)
+    at LLMService.getModelRecommendations (/workspace/portfolio/server/services/llm.ts:1222:29)
+    at /workspace/portfolio/server/routes/generate.ts:201:40
+    at Layer.handle [as handle_request] (/workspace/portfolio/server/node_modules/express/lib/router/layer.js:95:5)
+    at next (/workspace/portfolio/server/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/workspace/portfolio/server/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/workspace/portfolio/server/node_modules/express/lib/router/layer.js:95:5)
+    at /workspace/portfolio/server/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/workspace/portfolio/server/node_modules/express/lib/router/index.js:346:12)
+    at next (/workspace/portfolio/server/node_modules/express/lib/router/index.js:280:10)
+2025-06-24T16:32:04.283Z - POST /api/generate/recommendations
+Error getting recommendations: TypeError: Cannot read properties of undefined (reading 'length')
+    at LLMService.calculatePortfolioComplexity (/workspace/portfolio/server/services/llm.ts:1367:50)
+    at LLMService.getModelRecommendations (/workspace/portfolio/server/services/llm.ts:1222:29)
+    at /workspace/portfolio/server/routes/generate.ts:201:40
+    at Layer.handle [as handle_request] (/workspace/portfolio/server/node_modules/express/lib/router/layer.js:95:5)
+    at next (/workspace/portfolio/server/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/workspace/portfolio/server/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/workspace/portfolio/server/node_modules/express/lib/router/layer.js:95:5)
+    at /workspace/portfolio/server/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/workspace/portfolio/server/node_modules/express/lib/router/index.js:346:12)
+    at next (/workspace/portfolio/server/node_modules/express/lib/router/index.js:280:10)
+[INFO] 16:32:17 Restarting: /workspace/portfolio/server/services/llm.ts has been modified
+cInitialized 0 LLM providers
+Starting server on port 12000
+🚀 Server listening at http://localhost:12000
+💼 Portfolio data will be saved to /workspace/portfolio/server/data
+🤖 LLM portfolio generation available at /api/generate
+2025-06-24T16:32:24.702Z - POST /api/generate/recommendations
+2025-06-24T16:32:29.719Z - GET /api/generate/health
+2025-06-24T16:33:08.093Z - GET /api/generate/health
+2025-06-24T16:33:13.355Z - GET /api/generate/history
+2025-06-24T16:33:17.962Z - GET /api/generate/history
+2025-06-24T16:40:20.684Z - GET /api/generate/providers
+2025-06-24T16:40:24.210Z - GET /api/generate/providers
+2025-06-24T16:42:11.194Z - GET /
+2025-06-24T16:42:42.500Z - GET /
+2025-06-24T16:50:09.262Z - GET /api/generate/providers
+2025-06-24T16:50:14.584Z - GET /api/generate/providers
+2025-06-24T16:50:23.476Z - POST /api/generate/estimate-cost
+Error estimating cost: TypeError: Cannot read properties of undefined (reading 'provider')
+    at LLMService.estimateCost (/workspace/portfolio/server/services/llm.ts:1184:53)
+    at /workspace/portfolio/server/routes/generate.ts:187:33
+    at Layer.handle [as handle_request] (/workspace/portfolio/server/node_modules/express/lib/router/layer.js:95:5)
+    at next (/workspace/portfolio/server/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/workspace/portfolio/server/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/workspace/portfolio/server/node_modules/express/lib/router/layer.js:95:5)
+    at /workspace/portfolio/server/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/workspace/portfolio/server/node_modules/express/lib/router/index.js:346:12)
+    at next (/workspace/portfolio/server/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/workspace/portfolio/server/node_modules/express/lib/router/index.js:175:3)
+2025-06-24T16:50:23.514Z - POST /api/generate/recommendations
+2025-06-24T16:50:23.536Z - GET /api/generate/health
+2025-06-24T16:50:23.557Z - GET /api/generate/history
+[INFO] 16:51:15 Restarting: /workspace/portfolio/server/routes/generate.ts has been modified
+cInitialized 0 LLM providers
+Starting server on port 12000
+🚀 Server listening at http://localhost:12000
+💼 Portfolio data will be saved to /workspace/portfolio/server/data
+🤖 LLM portfolio generation available at /api/generate
+2025-06-24T16:51:20.892Z - POST /api/generate/estimate-cost
+2025-06-24T16:56:13.167Z - GET /api/generate/providers
+2025-06-24T16:56:13.198Z - POST /api/generate/estimate-cost
+2025-06-24T16:56:13.222Z - POST /api/generate/recommendations
+2025-06-24T16:56:13.244Z - GET /api/generate/health
+2025-06-24T16:56:13.267Z - GET /api/generate/history
+2025-06-24T16:56:19.366Z - GET /api/generate/providers
+2025-06-24T16:56:26.940Z - POST /api/generate/estimate-cost
+2025-06-24T16:56:33.664Z - POST /api/generate/recommendations
+2025-06-24T16:56:41.597Z - GET /api/generate/health
+2025-06-24T16:56:46.028Z - GET /api/generate/history

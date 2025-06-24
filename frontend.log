@@ -1,10 +1,13 @@
 
 > portfolio-client@1.0.0 dev
-> vite --port 12002 --host 0.0.0.0
+> vite
 
 Port 12002 is in use, trying another one...
+Port 12003 is in use, trying another one...
+Port 12004 is in use, trying another one...
+Port 12005 is in use, trying another one...
 
-  VITE v5.4.19  ready in 275 ms
+  VITE v5.4.19  ready in 300 ms
 
-  ➜  Local:   http://localhost:12003/
-  ➜  Network: http://10.2.49.14:12003/
+  ➜  Local:   http://localhost:12006/
+  ➜  Network: http://10.2.49.14:12006/
