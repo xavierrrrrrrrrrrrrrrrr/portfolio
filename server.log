@@ -1,0 +1,31 @@
+
+> server@1.0.0 dev
+> ts-node-dev --respawn --clear server.ts
+
+[INFO] 20:13:49 ts-node-dev ver. 2.0.0 (using ts-node ver. 10.9.2, typescript ver. 5.8.3)
+cStarting server on port 12000
+🚀 Server listening at http://localhost:12000
+💼 Portfolio data will be saved to /home/brandybuck/projects/portfolio2-main/server/data
+🤖 LLM portfolio generation available at /api/generate
+2025-06-24T14:44:40.228Z - OPTIONS /api/portfolio
+2025-06-24T14:44:40.232Z - POST /api/portfolio
+Received POST request to /api/portfolio
+Request body: {"personalInfo":{"name":"t","age":"3","location":"t","email":"t@gmail.com","phone":"34"},"aboutMe":"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee","education":[],"projects":[{"id":"1750776269019dc4rs4t","name":"","description":"","technologies":[],"githubUrl":"","liveUrl":"","imageUrl":""},{"id":"1750776269019sc9mjk2","name":"","description":"","technologies":[],"githubUrl":"","liveUrl":"","imageUrl":""},{"id":"1750776269019bp5dk50","name":"","description":"","technologies":[],"githubUrl":"","liveUrl":"","imageUrl":""}],"achievements":[],"socialLinks":{"github":"t","linkedin":"t","twitter":"","website":"","other":""},"generatedAt":"2025-06-24T14:44:40.221Z"}
+Validation passed
+Portfolio saved: t_2025-06-24T14-44-40-243Z.json
+2025-06-24T14:44:57.131Z - OPTIONS /api/generate?provider=openrouter&style=minimal&model=deepseek-ai/deepseek-coder
+2025-06-24T14:44:57.135Z - POST /api/generate?provider=openrouter&style=minimal&model=deepseek-ai/deepseek-coder
+Received request to generate portfolio
+Generating portfolio with provider: openrouter, style: minimal
+Generating portfolio with openrouter using minimal style
+Error generating with openrouter: Error: Model must be specified for OpenRouter provider
+    at LLMService.generateEnhancedContent (/home/brandybuck/projects/portfolio2-main/server/services/llm.ts:162:19)
+    at LLMService.generatePortfolio (/home/brandybuck/projects/portfolio2-main/server/services/llm.ts:104:40)
+    at /home/brandybuck/projects/portfolio2-main/server/routes/generate.ts:44:49
+    at Layer.handle [as handle_request] (/home/brandybuck/projects/portfolio2-main/server/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/brandybuck/projects/portfolio2-main/server/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/brandybuck/projects/portfolio2-main/server/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/brandybuck/projects/portfolio2-main/server/node_modules/express/lib/router/layer.js:95:5)
+    at /home/brandybuck/projects/portfolio2-main/server/node_modules/express/lib/router/index.js:284:15
+    at router.process_params (/home/brandybuck/projects/portfolio2-main/server/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/brandybuck/projects/portfolio2-main/server/node_modules/express/lib/router/index.js:280:10)

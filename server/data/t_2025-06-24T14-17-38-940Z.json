@@ -1,0 +1,49 @@
+{
+  "personalInfo": {
+    "name": "t",
+    "age": "20",
+    "location": "india",
+    "email": "ishanghosh0111@gmail.com",
+    "phone": "3245"
+  },
+  "aboutMe": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "education": [],
+  "projects": [
+    {
+      "id": "17507746457092uqklmi",
+      "name": "",
+      "description": "",
+      "technologies": [],
+      "githubUrl": "",
+      "liveUrl": "",
+      "imageUrl": ""
+    },
+    {
+      "id": "1750774645709ql4xn96",
+      "name": "",
+      "description": "",
+      "technologies": [],
+      "githubUrl": "",
+      "liveUrl": "",
+      "imageUrl": ""
+    },
+    {
+      "id": "1750774645709h5o3fh4",
+      "name": "",
+      "description": "",
+      "technologies": [],
+      "githubUrl": "",
+      "liveUrl": "",
+      "imageUrl": ""
+    }
+  ],
+  "achievements": [],
+  "socialLinks": {
+    "github": "t",
+    "linkedin": "t",
+    "twitter": "",
+    "website": "",
+    "other": ""
+  },
+  "generatedAt": "2025-06-24T14:17:38.923Z"
+}

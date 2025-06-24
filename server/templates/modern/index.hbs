@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{personalInfo.name}} - Modern Portfolio</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+</head>
+<body class="style-modern">
+  <div class="sidebar">
+    <div class="sidebar-content">
+      <div class="profile">
+        <h1>{{personalInfo.name}}</h1>
+        <p class="tagline">{{personalInfo.location}}</p>
+      </div>
+      
+      <nav>
+        <ul>
+          <li><a href="#about" class="active">About</a></li>
+          <li><a href="#projects">Projects</a></li>
+          <li><a href="#education">Education</a></li>
+          {{#if achievements.length}}
+          <li><a href="#achievements">Achievements</a></li>
+          {{/if}}
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+      
+      <div class="social-links">
+        {{#if socialLinks.github}}
+        <a href="{{socialLinks.github}}" target="_blank" class="social-link">GitHub</a>
+        {{/if}}
+        {{#if socialLinks.linkedin}}
+        <a href="{{socialLinks.linkedin}}" target="_blank" class="social-link">LinkedIn</a>
+        {{/if}}
+        {{#if socialLinks.twitter}}
+        <a href="{{socialLinks.twitter}}" target="_blank" class="social-link">Twitter</a>
+        {{/if}}
+      </div>
+    </div>
+  </div>
+  
+  <main>
+    <section id="about" class="about">
+      <div class="section-header">
+        <h2>About Me</h2>
+      </div>
+      <div class="section-content">
+        <p>{{aboutMe}}</p>
+        
+        <div class="contact-info">
+          <div class="contact-item">
+            <span class="label">Email:</span>
+            <span class="value">{{personalInfo.email}}</span>
+          </div>
+          {{#if personalInfo.phone}}
+          <div class="contact-item">
+            <span class="label">Phone:</span>
+            <span class="value">{{personalInfo.phone}}</span>
+          </div>
+          {{/if}}
+          {{#if socialLinks.website}}
+          <div class="contact-item">
+            <span class="label">Website:</span>
+            <span class="value"><a href="{{socialLinks.website}}" target="_blank">{{socialLinks.website}}</a></span>
+          </div>
+          {{/if}}
+        </div>
+      </div>
+    </section>
+    
+    <section id="projects" class="projects">
+      <div class="section-header">
+        <h2>Projects</h2>
+      </div>
+      <div class="section-content">
+        <div class="project-grid">
+          {{#each projects}}
+            <div class="project-card">
+              {{#if imageUrl}}
+              <div class="project-image">
+                <img src="{{imageUrl}}" alt="{{name}}">
+              </div>
+              {{/if}}
+              <div class="project-content">
+                <h3>{{name}}</h3>
+                <p>{{description}}</p>
+                <div class="technologies">
+                  {{#each technologies}}
+                    <span class="tech-tag">{{this}}</span>
+                  {{/each}}
+                </div>
+                <div class="project-links">
+                  {{#if githubUrl}}
+                  <a href="{{githubUrl}}" target="_blank" class="btn">GitHub</a>
+                  {{/if}}
+                  {{#if liveUrl}}
+                  <a href="{{liveUrl}}" target="_blank" class="btn btn-primary">Live Demo</a>
+                  {{/if}}
+                </div>
+              </div>
+            </div>
+          {{/each}}
+        </div>
+      </div>
+    </section>
+    
+    <section id="education" class="education">
+      <div class="section-header">
+        <h2>Education</h2>
+      </div>
+      <div class="section-content">
+        <div class="timeline">
+          {{#each education}}
+            <div class="timeline-item">
+              <div class="timeline-marker"></div>
+              <div class="timeline-content">
+                <div class="timeline-date">{{startYear}} - {{endYear}}</div>
+                <h3>{{degree}} in {{field}}</h3>
+                <p class="institution">{{institution}}</p>
+                {{#if gpa}}
+                <p class="gpa">GPA: {{gpa}}</p>
+                {{/if}}
+              </div>
+            </div>
+          {{/each}}
+        </div>
+      </div>
+    </section>
+    
+    {{#if achievements.length}}
+    <section id="achievements" class="achievements">
+      <div class="section-header">
+        <h2>Achievements</h2>
+      </div>
+      <div class="section-content">
+        <div class="achievements-grid">
+          {{#each achievements}}
+            <div class="achievement-card">
+              <div class="achievement-date">{{date}}</div>
+              <h3>{{title}}</h3>
+              <p>{{description}}</p>
+              {{#if organization}}
+              <p class="organization">{{organization}}</p>
+              {{/if}}
+            </div>
+          {{/each}}
+        </div>
+      </div>
+    </section>
+    {{/if}}
+    
+    <section id="contact" class="contact">
+      <div class="section-header">
+        <h2>Contact</h2>
+      </div>
+      <div class="section-content">
+        <p>Feel free to reach out to me for collaborations or opportunities.</p>
+        
+        <div class="contact-grid">
+          <div class="contact-card">
+            <h3>Email</h3>
+            <p><a href="mailto:{{personalInfo.email}}">{{personalInfo.email}}</a></p>
+          </div>
+          
+          {{#if personalInfo.phone}}
+          <div class="contact-card">
+            <h3>Phone</h3>
+            <p><a href="tel:{{personalInfo.phone}}">{{personalInfo.phone}}</a></p>
+          </div>
+          {{/if}}
+          
+          <div class="contact-card">
+            <h3>Location</h3>
+            <p>{{personalInfo.location}}</p>
+          </div>
+          
+          {{#if socialLinks.website}}
+          <div class="contact-card">
+            <h3>Website</h3>
+            <p><a href="{{socialLinks.website}}" target="_blank">{{socialLinks.website}}</a></p>
+          </div>
+          {{/if}}
+        </div>
+        
+        <div class="social-links-large">
+          {{#if socialLinks.github}}
+          <a href="{{socialLinks.github}}" target="_blank" class="social-link-large">GitHub</a>
+          {{/if}}
+          {{#if socialLinks.linkedin}}
+          <a href="{{socialLinks.linkedin}}" target="_blank" class="social-link-large">LinkedIn</a>
+          {{/if}}
+          {{#if socialLinks.twitter}}
+          <a href="{{socialLinks.twitter}}" target="_blank" class="social-link-large">Twitter</a>
+          {{/if}}
+          {{#if socialLinks.other}}
+          <a href="{{socialLinks.other}}" target="_blank" class="social-link-large">Other</a>
+          {{/if}}
+        </div>
+      </div>
+    </section>
+    
+    <footer>
+      <p>&copy; {{currentYear}} {{personalInfo.name}}. All rights reserved.</p>
+    </footer>
+  </main>
+  
+  <script src="script.js"></script>
+</body>
+</html>

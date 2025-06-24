@@ -1,0 +1,17 @@
+
+> server@1.0.0 dev
+> ts-node-dev --respawn --clear server.ts
+
+[INFO] 19:31:39 ts-node-dev ver. 2.0.0 (using ts-node ver. 10.9.2, typescript ver. 5.8.3)
+cCompilation error in /home/brandybuck/projects/portfolio2-main/server/routes/generate.ts
+[ERROR] 19:31:41 ⨯ Unable to compile TypeScript:
+routes/generate.ts(18,18): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response) => Promise<express.Response<any, Record<string, any>> | undefined>' is not assignable to parameter of type 'Application<Record<string, any>>'.
+      Type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>>) => Promise<...>' is missing the following properties from type 'Application<Record<string, any>>': init, defaultConfiguration, engine, set, and 63 more.
+routes/generate.ts(68,16): error TS18046: 'error' is of type 'unknown'.
+routes/generate.ts(74,35): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '(req: Request, res: Response) => express.Response<any, Record<string, any>> | undefined' is not assignable to parameter of type 'Application<Record<string, any>>'.
+      Type '(req: Request<ParamsDictionary, any, any, ParsedQs, Record<string, any>>, res: Response<any, Record<string, any>>) => Response<...> | undefined' is missing the following properties from type 'Application<Record<string, any>>': init, defaultConfiguration, engine, set, and 63 more.
+

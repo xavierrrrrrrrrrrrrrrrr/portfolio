@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.0.0"
+  },
+  "dependencies": {
+    "@tailwindcss/forms": "^0.5.10"
+  }
+}

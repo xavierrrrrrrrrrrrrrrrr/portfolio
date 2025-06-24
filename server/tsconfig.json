@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "outDir": "./dist",
+    "rootDir": "./",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,         // ✅ allows importing JSON files
+    "moduleResolution": "node",        // ✅ ensures correct path resolution
+    "baseUrl": ".",                    // ✅ allows paths like "types/portfolio"
+    "paths": {
+      "types/*": ["types/*"]           // ✅ enables absolute imports from shared types
+    }
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "dist", "client"]
+}

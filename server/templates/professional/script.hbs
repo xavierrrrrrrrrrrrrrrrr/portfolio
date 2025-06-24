@@ -1,0 +1,78 @@
+document.addEventListener('DOMContentLoaded', function() {
+  // Add smooth scrolling for navigation
+  document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      
+      const targetId = this.getAttribute('href');
+      const targetElement = document.querySelector(targetId);
+      
+      if (targetElement) {
+        const navHeight = document.querySelector('nav').offsetHeight;
+        const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - navHeight;
+        
+        window.scrollTo({
+          top: targetPosition,
+          behavior: 'smooth'
+        });
+        
+        // Update active nav item
+        document.querySelectorAll('nav a').forEach(item => {
+          item.classList.remove('active');
+        });
+        this.classList.add('active');
+      }
+    });
+  });
+  
+  // Add fade-in animation for sections
+  const sections = document.querySelectorAll('section');
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        
+        // Also animate children
+        const fadeElements = entry.target.querySelectorAll('.project-card, .education-item, .achievement-item');
+        fadeElements.forEach((element, index) => {
+          setTimeout(() => {
+            element.classList.add('visible');
+          }, 100 * index);
+        });
+        
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  
+  sections.forEach(section => {
+    observer.observe(section);
+    section.classList.add('fade-in');
+    
+    // Add fade-in class to children
+    const fadeElements = section.querySelectorAll('.project-card, .education-item, .achievement-item');
+    fadeElements.forEach(element => {
+      element.classList.add('fade-in');
+    });
+  });
+  
+  // Highlight active nav item on scroll
+  window.addEventListener('scroll', function() {
+    const scrollPosition = window.scrollY + document.querySelector('nav').offsetHeight + 50;
+    
+    document.querySelectorAll('section').forEach(section => {
+      const top = section.offsetTop;
+      const bottom = top + section.offsetHeight;
+      const id = section.getAttribute('id');
+      
+      if (scrollPosition >= top && scrollPosition <= bottom) {
+        document.querySelectorAll('nav a').forEach(item => {
+          item.classList.remove('active');
+        });
+        
+        document.querySelector(`nav a[href="#${id}"]`)?.classList.add('active');
+      }
+    });
+  });
+});

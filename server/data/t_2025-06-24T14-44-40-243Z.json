@@ -1,0 +1,49 @@
+{
+  "personalInfo": {
+    "name": "t",
+    "age": "3",
+    "location": "t",
+    "email": "t@gmail.com",
+    "phone": "34"
+  },
+  "aboutMe": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "education": [],
+  "projects": [
+    {
+      "id": "1750776269019dc4rs4t",
+      "name": "",
+      "description": "",
+      "technologies": [],
+      "githubUrl": "",
+      "liveUrl": "",
+      "imageUrl": ""
+    },
+    {
+      "id": "1750776269019sc9mjk2",
+      "name": "",
+      "description": "",
+      "technologies": [],
+      "githubUrl": "",
+      "liveUrl": "",
+      "imageUrl": ""
+    },
+    {
+      "id": "1750776269019bp5dk50",
+      "name": "",
+      "description": "",
+      "technologies": [],
+      "githubUrl": "",
+      "liveUrl": "",
+      "imageUrl": ""
+    }
+  ],
+  "achievements": [],
+  "socialLinks": {
+    "github": "t",
+    "linkedin": "t",
+    "twitter": "",
+    "website": "",
+    "other": ""
+  },
+  "generatedAt": "2025-06-24T14:44:40.221Z"
+}

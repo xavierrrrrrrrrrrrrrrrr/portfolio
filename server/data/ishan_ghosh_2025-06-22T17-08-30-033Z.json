@@ -1,0 +1,49 @@
+{
+  "personalInfo": {
+    "name": "ishan ghosh",
+    "age": "20",
+    "location": "kolkata",
+    "email": "ishanghosh0111@gmail.com",
+    "phone": "+917605891779"
+  },
+  "aboutMe": "wellwellwellwellwellwellwellwellwellwellwellwellwellwellwellwellwellwellwellwellwellwell",
+  "education": [],
+  "projects": [
+    {
+      "id": "1750612075138qsrk8nl",
+      "name": "",
+      "description": "",
+      "technologies": [],
+      "githubUrl": "",
+      "liveUrl": "",
+      "imageUrl": ""
+    },
+    {
+      "id": "1750612075138zg1exk4",
+      "name": "",
+      "description": "",
+      "technologies": [],
+      "githubUrl": "",
+      "liveUrl": "",
+      "imageUrl": ""
+    },
+    {
+      "id": "1750612075138vmb6tt4",
+      "name": "",
+      "description": "",
+      "technologies": [],
+      "githubUrl": "",
+      "liveUrl": "",
+      "imageUrl": ""
+    }
+  ],
+  "achievements": [],
+  "socialLinks": {
+    "github": "https://github.com/darkraider01",
+    "linkedin": "rr",
+    "twitter": "",
+    "website": "",
+    "other": ""
+  },
+  "generatedAt": "2025-06-22T17:08:30.001Z"
+}

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{personalInfo.name}} - Professional Portfolio</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+</head>
+<body class="style-professional">
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <div class="header-text">
+          <h1>{{personalInfo.name}}</h1>
+          <p class="tagline">{{personalInfo.location}} | {{personalInfo.email}}</p>
+          <p class="intro">Professional Portfolio</p>
+        </div>
+      </div>
+    </div>
+  </header>
+  
+  <nav>
+    <div class="container">
+      <ul>
+        <li><a href="#about">About</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#education">Education</a></li>
+        {{#if achievements.length}}
+        <li><a href="#achievements">Achievements</a></li>
+        {{/if}}
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+  
+  <section id="about" class="about">
+    <div class="container">
+      <h2>About Me</h2>
+      <div class="about-content">
+        <p>{{aboutMe}}</p>
+      </div>
+    </div>
+  </section>
+  
+  <section id="projects" class="projects">
+    <div class="container">
+      <h2>Projects</h2>
+      <div class="project-grid">
+        {{#each projects}}
+          <div class="project-card">
+            {{#if imageUrl}}
+            <div class="project-image">
+              <img src="{{imageUrl}}" alt="{{name}}">
+            </div>
+            {{/if}}
+            <div class="project-content">
+              <h3>{{name}}</h3>
+              <p>{{description}}</p>
+              <div class="technologies">
+                {{#each technologies}}
+                  <span class="tech-tag">{{this}}</span>
+                {{/each}}
+              </div>
+              <div class="project-links">
+                {{#if githubUrl}}
+                <a href="{{githubUrl}}" target="_blank" class="btn btn-primary">GitHub</a>
+                {{/if}}
+                {{#if liveUrl}}
+                <a href="{{liveUrl}}" target="_blank" class="btn btn-secondary">Live Demo</a>
+                {{/if}}
+              </div>
+            </div>
+          </div>
+        {{/each}}
+      </div>
+    </div>
+  </section>
+  
+  <section id="education" class="education">
+    <div class="container">
+      <h2>Education</h2>
+      <div class="education-list">
+        {{#each education}}
+          <div class="education-item">
+            <div class="education-content">
+              <h3>{{degree}} in {{field}}</h3>
+              <p class="institution">{{institution}}</p>
+              <p class="years">{{startYear}} - {{endYear}}</p>
+              {{#if gpa}}
+              <p class="gpa">GPA: {{gpa}}</p>
+              {{/if}}
+            </div>
+          </div>
+        {{/each}}
+      </div>
+    </div>
+  </section>
+  
+  {{#if achievements.length}}
+  <section id="achievements" class="achievements">
+    <div class="container">
+      <h2>Achievements</h2>
+      <div class="achievements-list">
+        {{#each achievements}}
+          <div class="achievement-item">
+            <div class="achievement-content">
+              <h3>{{title}}</h3>
+              <p>{{description}}</p>
+              {{#if organization}}
+              <p class="organization">{{organization}}</p>
+              {{/if}}
+              <p class="date">{{date}}</p>
+            </div>
+          </div>
+        {{/each}}
+      </div>
+    </div>
+  </section>
+  {{/if}}
+  
+  <section id="contact" class="contact">
+    <div class="container">
+      <h2>Contact</h2>
+      <div class="contact-info">
+        <div class="contact-item">
+          <h3>Email</h3>
+          <p><a href="mailto:{{personalInfo.email}}">{{personalInfo.email}}</a></p>
+        </div>
+        {{#if personalInfo.phone}}
+        <div class="contact-item">
+          <h3>Phone</h3>
+          <p><a href="tel:{{personalInfo.phone}}">{{personalInfo.phone}}</a></p>
+        </div>
+        {{/if}}
+        <div class="contact-item">
+          <h3>Location</h3>
+          <p>{{personalInfo.location}}</p>
+        </div>
+      </div>
+      <div class="social-links">
+        {{#if socialLinks.github}}
+        <a href="{{socialLinks.github}}" target="_blank" class="social-link">GitHub</a>
+        {{/if}}
+        {{#if socialLinks.linkedin}}
+        <a href="{{socialLinks.linkedin}}" target="_blank" class="social-link">LinkedIn</a>
+        {{/if}}
+        {{#if socialLinks.twitter}}
+        <a href="{{socialLinks.twitter}}" target="_blank" class="social-link">Twitter</a>
+        {{/if}}
+        {{#if socialLinks.website}}
+        <a href="{{socialLinks.website}}" target="_blank" class="social-link">Website</a>
+        {{/if}}
+        {{#if socialLinks.other}}
+        <a href="{{socialLinks.other}}" target="_blank" class="social-link">Other</a>
+        {{/if}}
+      </div>
+    </div>
+  </section>
+  
+  <footer>
+    <div class="container">
+      <p>&copy; {{currentYear}} {{personalInfo.name}}. All rights reserved.</p>
+    </div>
+  </footer>
+  
+  <script src="script.js"></script>
+</body>
+</html>

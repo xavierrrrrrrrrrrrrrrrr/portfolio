@@ -1,0 +1,59 @@
+{
+  "personalInfo": {
+    "name": "Ishan Ghosh",
+    "age": "20",
+    "location": "Kolkata, India",
+    "email": "ishanghosh0111@gmail.com",
+    "phone": "7605891779"
+  },
+  "aboutMe": "I'm a passionate second-year BTech CSE student with a strong interest in cybersecurity and blockchain. I've honed my skills in Solidity, ML, Java, and C. I'm actively seeking internship opportunities to apply my knowledge and contribute to innovative projects in the cybersecurity field.\n",
+  "education": [
+    {
+      "id": "1750613384909",
+      "institution": "iem",
+      "degree": "btech",
+      "field": "comp science",
+      "startYear": "2023",
+      "endYear": "2024",
+      "gpa": ""
+    }
+  ],
+  "projects": [
+    {
+      "id": "1750613409786gvp46ya",
+      "name": "",
+      "description": "",
+      "technologies": [],
+      "githubUrl": "",
+      "liveUrl": "",
+      "imageUrl": ""
+    },
+    {
+      "id": "17506134097867k7t5gl",
+      "name": "",
+      "description": "",
+      "technologies": [],
+      "githubUrl": "",
+      "liveUrl": "",
+      "imageUrl": ""
+    },
+    {
+      "id": "1750613409786oxekrcd",
+      "name": "",
+      "description": "",
+      "technologies": [],
+      "githubUrl": "",
+      "liveUrl": "",
+      "imageUrl": ""
+    }
+  ],
+  "achievements": [],
+  "socialLinks": {
+    "github": "https://github.com/darkraider01",
+    "linkedin": "tt",
+    "twitter": "",
+    "website": "",
+    "other": ""
+  },
+  "generatedAt": "2025-06-22T17:30:32.295Z"
+}

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{personalInfo.name}} - Dark Portfolio</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="style-dark">
+  <!-- Animated background -->
+  <div class="bg-animation">
+    <div class="stars"></div>
+    <div class="floating-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <span class="logo-text">{{personalInfo.name}}</span>
+        <span class="logo-cursor">_</span>
+      </div>
+      <ul class="nav-menu">
+        <li><a href="#about" class="nav-link">About</a></li>
+        <li><a href="#projects" class="nav-link">Projects</a></li>
+        <li><a href="#education" class="nav-link">Education</a></li>
+        {{#if achievements.length}}
+        <li><a href="#achievements" class="nav-link">Achievements</a></li>
+        {{/if}}
+        <li><a href="#contact" class="nav-link">Contact</a></li>
+      </ul>
+      <div class="hamburger">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-container">
+      <div class="hero-content">
+        <div class="hero-text">
+          <h1 class="hero-title">
+            <span class="typing-text">Hello, I'm {{personalInfo.name}}</span>
+          </h1>
+          <p class="hero-subtitle">{{#if tagline}}{{tagline}}{{else}}Full Stack Developer & Designer{{/if}}</p>
+          <p class="hero-description">{{#if enhancedAbout}}{{enhancedAbout}}{{else}}{{aboutMe}}{{/if}}</p>
+          <div class="hero-buttons">
+            <a href="#projects" class="btn btn-primary">
+              <i class="fas fa-code"></i>
+              View My Work
+            </a>
+            <a href="#contact" class="btn btn-secondary">
+              <i class="fas fa-envelope"></i>
+              Get In Touch
+            </a>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="code-window">
+            <div class="window-header">
+              <div class="window-controls">
+                <span class="control close"></span>
+                <span class="control minimize"></span>
+                <span class="control maximize"></span>
+              </div>
+              <span class="window-title">portfolio.js</span>
+            </div>
+            <div class="code-content">
+              <pre><code class="language-javascript">
+const developer = {
+  name: "{{personalInfo.name}}",
+  location: "{{personalInfo.location}}",
+  skills: [{{#each projects}}"{{#each technologies}}{{this}}"{{#unless @last}}, {{/unless}}{{/each}}{{#unless @last}}, {{/unless}}{{/each}}],
+  passion: "Creating amazing experiences",
+  available: true
+};
+
+console.log("Welcome to my portfolio!");
+              </code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section id="about" class="about">
+    <div class="container">
+      <h2 class="section-title">
+        <span class="section-number">01.</span>
+        About Me
+      </h2>
+      <div class="about-content">
+        <div class="about-text">
+          <p>{{#if enhancedAbout}}{{enhancedAbout}}{{else}}{{aboutMe}}{{/if}}</p>
+          <div class="contact-info">
+            <div class="contact-item">
+              <i class="fas fa-envelope"></i>
+              <span>{{personalInfo.email}}</span>
+            </div>
+            <div class="contact-item">
+              <i class="fas fa-map-marker-alt"></i>
+              <span>{{personalInfo.location}}</span>
+            </div>
+            {{#if personalInfo.phone}}
+            <div class="contact-item">
+              <i class="fas fa-phone"></i>
+              <span>{{personalInfo.phone}}</span>
+            </div>
+            {{/if}}
+          </div>
+        </div>
+        <div class="about-skills">
+          <h3>Technologies I work with:</h3>
+          <div class="skills-grid">
+            {{#each projects}}
+              {{#each technologies}}
+                <span class="skill-tag">{{this}}</span>
+              {{/each}}
+            {{/each}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Projects Section -->
+  <section id="projects" class="projects">
+    <div class="container">
+      <h2 class="section-title">
+        <span class="section-number">02.</span>
+        Featured Projects
+      </h2>
+      <div class="projects-grid">
+        {{#each projects}}
+        <div class="project-card" data-aos="fade-up" data-aos-delay="{{@index}}00">
+          <div class="project-header">
+            <div class="project-links">
+              {{#if githubUrl}}
+              <a href="{{githubUrl}}" target="_blank" class="project-link">
+                <i class="fab fa-github"></i>
+              </a>
+              {{/if}}
+              {{#if liveUrl}}
+              <a href="{{liveUrl}}" target="_blank" class="project-link">
+                <i class="fas fa-external-link-alt"></i>
+              </a>
+              {{/if}}
+            </div>
+          </div>
+          {{#if imageUrl}}
+          <div class="project-image">
+            <img src="{{imageUrl}}" alt="{{name}}" loading="lazy">
+            <div class="project-overlay">
+              <div class="overlay-content">
+                <h3>{{name}}</h3>
+                <p>{{description}}</p>
+              </div>
+            </div>
+          </div>
+          {{/if}}
+          <div class="project-content">
+            <h3 class="project-title">{{name}}</h3>
+            <p class="project-description">{{description}}</p>
+            <div class="project-tech">
+              {{#each technologies}}
+              <span class="tech-tag">{{this}}</span>
+              {{/each}}
+            </div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+  </section>
+
+  <!-- Education Section -->
+  <section id="education" class="education">
+    <div class="container">
+      <h2 class="section-title">
+        <span class="section-number">03.</span>
+        Education
+      </h2>
+      <div class="timeline">
+        {{#each education}}
+        <div class="timeline-item">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <h3>{{degree}} in {{field}}</h3>
+            <h4>{{institution}}</h4>
+            <span class="timeline-date">{{startYear}} - {{endYear}}</span>
+            {{#if gpa}}
+            <p class="gpa">GPA: {{gpa}}</p>
+            {{/if}}
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+  </section>
+
+  {{#if achievements.length}}
+  <!-- Achievements Section -->
+  <section id="achievements" class="achievements">
+    <div class="container">
+      <h2 class="section-title">
+        <span class="section-number">04.</span>
+        Achievements
+      </h2>
+      <div class="achievements-grid">
+        {{#each achievements}}
+        <div class="achievement-card">
+          <div class="achievement-icon">
+            <i class="fas fa-trophy"></i>
+          </div>
+          <h3>{{title}}</h3>
+          <p>{{description}}</p>
+          {{#if organization}}
+          <span class="achievement-org">{{organization}}</span>
+          {{/if}}
+          <span class="achievement-date">{{date}}</span>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+  </section>
+  {{/if}}
+
+  <!-- Contact Section -->
+  <section id="contact" class="contact">
+    <div class="container">
+      <h2 class="section-title">
+        <span class="section-number">{{#if achievements.length}}05{{else}}04{{/if}}.</span>
+        Get In Touch
+      </h2>
+      <div class="contact-content">
+        <p>I'm always open to discussing new opportunities and interesting projects.</p>
+        <div class="contact-methods">
+          <a href="mailto:{{personalInfo.email}}" class="contact-method">
+            <i class="fas fa-envelope"></i>
+            <span>{{personalInfo.email}}</span>
+          </a>
+          {{#if personalInfo.phone}}
+          <a href="tel:{{personalInfo.phone}}" class="contact-method">
+            <i class="fas fa-phone"></i>
+            <span>{{personalInfo.phone}}</span>
+          </a>
+          {{/if}}
+        </div>
+        <div class="social-links">
+          {{#if socialLinks.github}}
+          <a href="{{socialLinks.github}}" target="_blank" class="social-link">
+            <i class="fab fa-github"></i>
+          </a>
+          {{/if}}
+          {{#if socialLinks.linkedin}}
+          <a href="{{socialLinks.linkedin}}" target="_blank" class="social-link">
+            <i class="fab fa-linkedin"></i>
+          </a>
+          {{/if}}
+          {{#if socialLinks.twitter}}
+          <a href="{{socialLinks.twitter}}" target="_blank" class="social-link">
+            <i class="fab fa-twitter"></i>
+          </a>
+          {{/if}}
+          {{#if socialLinks.website}}
+          <a href="{{socialLinks.website}}" target="_blank" class="social-link">
+            <i class="fas fa-globe"></i>
+          </a>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; {{currentYear}} {{personalInfo.name}}. Built with passion and code.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

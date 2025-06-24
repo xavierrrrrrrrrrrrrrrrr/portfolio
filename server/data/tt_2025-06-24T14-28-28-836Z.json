@@ -1,0 +1,49 @@
+{
+  "personalInfo": {
+    "name": "tt",
+    "age": "20",
+    "location": "ee",
+    "email": "0ishanghosh011@gmail.com",
+    "phone": "444"
+  },
+  "aboutMe": "weeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "education": [],
+  "projects": [
+    {
+      "id": "1750775246367cv1ldnw",
+      "name": "",
+      "description": "",
+      "technologies": [],
+      "githubUrl": "",
+      "liveUrl": "",
+      "imageUrl": ""
+    },
+    {
+      "id": "1750775246367vam5mr0",
+      "name": "",
+      "description": "",
+      "technologies": [],
+      "githubUrl": "",
+      "liveUrl": "",
+      "imageUrl": ""
+    },
+    {
+      "id": "1750775246367vi50a6s",
+      "name": "",
+      "description": "",
+      "technologies": [],
+      "githubUrl": "",
+      "liveUrl": "",
+      "imageUrl": ""
+    }
+  ],
+  "achievements": [],
+  "socialLinks": {
+    "github": "t",
+    "linkedin": "t",
+    "twitter": "",
+    "website": "",
+    "other": ""
+  },
+  "generatedAt": "2025-06-24T14:28:28.830Z"
+}
