@@ -44,11 +44,17 @@ interface GenerationResponse {
 export const PortfolioGeneration: React.FC<PortfolioGenerationProps> = ({ data }) => {
   const [selectedStyle, setSelectedStyle] = useState<PortfolioStyle>('minimal');
   const [selectedProvider, setSelectedProvider] = useState<LLMProvider>('openai');
-  const [selectedModel, setSelectedModel] = useState<string>(''); // For OpenRouter model selection
+  const [selectedModel, setSelectedModel] = useState<string>('');
+  const [availableProviders, setAvailableProviders] = useState<any[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationResponse, setGenerationResponse] = useState<GenerationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'html' | 'css' | 'js'>('html');
+  const [useStreaming, setUseStreaming] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState<any>(null);
+  const [temperature, setTemperature] = useState<number>(0.7);
+  const [maxTokens, setMaxTokens] = useState<number>(4096);
+  const [contextId, setContextId] = useState<string | null>(null);
 
   const styleOptions: StyleOption[] = [
     {
@@ -77,67 +83,47 @@ export const PortfolioGeneration: React.FC<PortfolioGenerationProps> = ({ data }
     },
   ];
 
-  const providerOptions: ProviderOption[] = [
-    {
-      id: 'openai',
-      name: 'OpenAI GPT-4',
-      description: 'Powerful, high-quality portfolio generation',
-      icon: <Cpu className="w-5 h-5 text-green-500" />,
-    },
-    {
-      id: 'gemini',
-      name: 'Google Gemini',
-      description: 'Creative, modern portfolio designs',
-      icon: <Cpu className="w-5 h-5 text-blue-500" />,
-    },
-    {
-      id: 'anthropic',
-      name: 'Anthropic Claude',
-      description: 'Detailed, thoughtful portfolio layouts',
-      icon: <Cpu className="w-5 h-5 text-purple-500" />,
-    },
-    {
-      id: 'ollama',
-      name: 'Ollama (Local)',
-      description: 'Private, on-device portfolio generation',
-      icon: <Cpu className="w-5 h-5 text-orange-500" />,
-    },
-    {
-      id: 'openrouter',
-      name: 'OpenRouter',
-      description: 'API gateway to Gemini/DeepSeek models',
-      icon: <Cpu className="w-5 h-5 text-indigo-500" />,
-    },
-  ];
+  // Fetch available providers on component mount
+  React.useEffect(() => {
+    const fetchProviders = async () => {
+      try {
+        const response = await fetch('http://localhost:12000/api/generate/providers');
+        const data = await response.json();
+        setAvailableProviders(data.providers || []);
+        
+        // Set default provider to first available one
+        const firstAvailable = data.providers?.find((p: any) => p.available);
+        if (firstAvailable) {
+          setSelectedProvider(firstAvailable.name);
+          setSelectedModel(firstAvailable.defaultModel);
+        }
+      } catch (error) {
+        console.error('Failed to fetch providers:', error);
+      }
+    };
+
+    fetchProviders();
+  }, []);
+
+  const providerOptions: ProviderOption[] = availableProviders.map(provider => ({
+    id: provider.name,
+    name: provider.displayName,
+    description: provider.description,
+    icon: <Cpu className="w-5 h-5 text-blue-500" />,
+  }));
 
   const generatePortfolio = async () => {
     setIsGenerating(true);
     setError(null);
     setGenerationResponse(null);
+    setGenerationProgress(null);
     
     try {
-      let apiUrl = `http://localhost:12000/api/generate?provider=${selectedProvider}&style=${selectedStyle}`;
-      
-      // Add model parameter for OpenRouter
-      if (selectedProvider === 'openrouter' && selectedModel) {
-        apiUrl += `&model=${selectedModel}`;
+      if (useStreaming) {
+        await generateWithStreaming();
+      } else {
+        await generateWithoutStreaming();
       }
-      
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to generate portfolio');
-      }
-      
-      const result = await response.json();
-      setGenerationResponse(result);
     } catch (err) {
       console.error('Error generating portfolio:', err);
       let errorMessage = 'Unknown error';
@@ -148,6 +134,93 @@ export const PortfolioGeneration: React.FC<PortfolioGenerationProps> = ({ data }
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const generateWithStreaming = async () => {
+    const params = new URLSearchParams({
+      provider: selectedProvider,
+      style: selectedStyle,
+      ...(selectedModel && { model: selectedModel }),
+      streaming: 'true',
+      temperature: temperature.toString(),
+      maxTokens: maxTokens.toString()
+    });
+
+    const response = await fetch(`http://localhost:12000/api/generate/stream?${params}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to start streaming generation');
+    }
+
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new Error('No response body reader available');
+    }
+
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      
+      if (done) break;
+      
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const eventData = JSON.parse(line.slice(6));
+            
+            if (eventData.type === 'progress') {
+              setGenerationProgress(eventData.data);
+            } else if (eventData.type === 'complete') {
+              setGenerationResponse(eventData.data);
+              setContextId(eventData.data.contextId);
+            } else if (eventData.type === 'error') {
+              throw new Error(eventData.data.message);
+            }
+          } catch (parseError) {
+            console.error('Error parsing streaming data:', parseError);
+          }
+        }
+      }
+    }
+  };
+
+  const generateWithoutStreaming = async () => {
+    const params = new URLSearchParams({
+      provider: selectedProvider,
+      style: selectedStyle,
+      ...(selectedModel && { model: selectedModel }),
+      temperature: temperature.toString(),
+      maxTokens: maxTokens.toString()
+    });
+    
+    const response = await fetch(`http://localhost:12000/api/generate?${params}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to generate portfolio');
+    }
+    
+    const result = await response.json();
+    setGenerationResponse(result);
+    setContextId(result.contextId);
   };
 
   const downloadPortfolio = () => {
@@ -258,8 +331,8 @@ export const PortfolioGeneration: React.FC<PortfolioGenerationProps> = ({ data }
         </div>
       </div>
       
-      {/* Model selection for OpenRouter */}
-      {selectedProvider === 'openrouter' && (
+      {/* Model selection */}
+      {selectedProvider && availableProviders.find(p => p.name === selectedProvider)?.models && (
         <div className="mb-6">
           <h3 className="text-lg font-medium text-gray-700 mb-2">Select Model</h3>
           <select
@@ -267,19 +340,77 @@ export const PortfolioGeneration: React.FC<PortfolioGenerationProps> = ({ data }
             onChange={(e) => setSelectedModel(e.target.value)}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="">Select a model</option>
-            <option value="google/gemini-pro">Google Gemini Pro</option>
-            <option value="deepseek-ai/deepseek-coder">DeepSeek-R1</option>
+            {availableProviders.find(p => p.name === selectedProvider)?.models.map((model: string) => (
+              <option key={model} value={model}>{model}</option>
+            ))}
           </select>
         </div>
       )}
+
+      {/* Advanced Options */}
+      <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+        <h3 className="text-lg font-medium text-gray-700 mb-4">Advanced Options</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Temperature (Creativity): {temperature}
+            </label>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.1"
+              value={temperature}
+              onChange={(e) => setTemperature(parseFloat(e.target.value))}
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>Conservative</span>
+              <span>Creative</span>
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Max Tokens: {maxTokens}
+            </label>
+            <input
+              type="range"
+              min="1000"
+              max="8192"
+              step="256"
+              value={maxTokens}
+              onChange={(e) => setMaxTokens(parseInt(e.target.value))}
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>Short</span>
+              <span>Detailed</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            id="streaming"
+            checked={useStreaming}
+            onChange={(e) => setUseStreaming(e.target.checked)}
+            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          />
+          <label htmlFor="streaming" className="ml-2 block text-sm text-gray-700">
+            Enable real-time streaming (see progress as it generates)
+          </label>
+        </div>
+      </div>
       
       <div className="flex justify-center mb-8">
         <button
           onClick={generatePortfolio}
-          disabled={isGenerating || (selectedProvider === 'openrouter' && !selectedModel)}
+          disabled={isGenerating || !selectedProvider || (selectedProvider && availableProviders.find(p => p.name === selectedProvider)?.models && !selectedModel)}
           className={`flex items-center px-6 py-3 rounded-lg text-white font-medium transition-all duration-200 ${
-            isGenerating || (selectedProvider === 'openrouter' && !selectedModel)
+            isGenerating || !selectedProvider || (selectedProvider && availableProviders.find(p => p.name === selectedProvider)?.models && !selectedModel)
               ? 'bg-gray-400 cursor-not-allowed'
               : 'bg-blue-500 hover:bg-blue-600'
           }`}
@@ -288,6 +419,33 @@ export const PortfolioGeneration: React.FC<PortfolioGenerationProps> = ({ data }
           {isGenerating ? 'Generating...' : 'Generate Portfolio'}
         </button>
       </div>
+
+      {/* Progress Display */}
+      {isGenerating && generationProgress && (
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-center mb-2">
+            <Sparkles className="w-5 h-5 text-blue-500 mr-2 animate-spin" />
+            <h3 className="text-lg font-medium text-blue-800">Generation Progress</h3>
+          </div>
+          <div className="mb-2">
+            <div className="flex justify-between text-sm text-blue-700 mb-1">
+              <span>{generationProgress.stage?.replace('_', ' ') || 'Processing...'}</span>
+              <span>{generationProgress.progress || 0}%</span>
+            </div>
+            <div className="w-full bg-blue-200 rounded-full h-2">
+              <div 
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${generationProgress.progress || 0}%` }}
+              ></div>
+            </div>
+          </div>
+          {generationProgress.stage && (
+            <p className="text-sm text-blue-600">
+              {getProgressMessage(generationProgress.stage)}
+            </p>
+          )}
+        </div>
+      )}
       
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start">
@@ -367,13 +525,44 @@ export const PortfolioGeneration: React.FC<PortfolioGenerationProps> = ({ data }
             </div>
           </div>
           
-          <div className="mt-4 text-xs text-gray-500">
-            <p>Generated at: {new Date(generationResponse.portfolio.metadata.generatedAt).toLocaleString()}</p>
-            <p>Provider: {generationResponse.portfolio.metadata.provider}</p>
-            <p>Style: {generationResponse.portfolio.metadata.style}</p>
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-500">
+            <div>
+              <p><strong>Generated:</strong> {new Date(generationResponse.portfolio.metadata.generatedAt).toLocaleString()}</p>
+              <p><strong>Provider:</strong> {generationResponse.portfolio.metadata.provider}</p>
+              <p><strong>Model:</strong> {generationResponse.portfolio.metadata.model || 'Default'}</p>
+              <p><strong>Style:</strong> {generationResponse.portfolio.metadata.style}</p>
+            </div>
+            <div>
+              {generationResponse.portfolio.metadata.tokensUsed && (
+                <p><strong>Tokens Used:</strong> {generationResponse.portfolio.metadata.tokensUsed.toLocaleString()}</p>
+              )}
+              {generationResponse.portfolio.metadata.generationTime && (
+                <p><strong>Generation Time:</strong> {(generationResponse.portfolio.metadata.generationTime / 1000).toFixed(2)}s</p>
+              )}
+              {generationResponse.portfolio.metadata.quality && (
+                <div>
+                  <p><strong>Quality Scores:</strong></p>
+                  <p className="ml-2">Accessibility: {generationResponse.portfolio.metadata.quality.accessibility}%</p>
+                  <p className="ml-2">Performance: {generationResponse.portfolio.metadata.quality.performance}%</p>
+                  <p className="ml-2">SEO: {generationResponse.portfolio.metadata.quality.seo}%</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
     </div>
   );
+
+  function getProgressMessage(stage: string): string {
+    const messages: Record<string, string> = {
+      'initializing': 'Setting up generation parameters...',
+      'templates_loaded': 'Loading portfolio templates...',
+      'ai_content_generated': 'AI is enhancing your content...',
+      'templates_compiled': 'Compiling your portfolio...',
+      'complete': 'Portfolio generation complete!'
+    };
+    
+    return messages[stage] || 'Processing...';
+  }
 };

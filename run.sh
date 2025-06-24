@@ -38,7 +38,7 @@ echo "Server started with PID $SERVER_PID"
 sleep 3
 
 # Start the frontend
-(cd frontend && npm run dev -- --port 12002 --host 0.0.0.0 > ../frontend.log 2>&1) &
+(cd frontend && npm run dev > ../frontend.log 2>&1) &
 FRONTEND_PID=$!
 echo "Frontend started with PID $FRONTEND_PID"
 
