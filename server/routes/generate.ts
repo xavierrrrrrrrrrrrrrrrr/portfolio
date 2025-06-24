@@ -14,14 +14,18 @@ if (!fs.existsSync(OUTPUT_DIR)) {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 }
 
-// Route to generate a portfolio website
+// Route to generate a portfolio website with enhanced options
 router.post('/', async (req: Request, res: Response) => {
   try {
     console.log('Received request to generate portfolio');
     
-    // Get query parameters
+    // Get query parameters with enhanced options
     const provider = (req.query.provider as string) || 'openai';
     const style = (req.query.style as string) || 'minimal';
+    const model = req.query.model as string;
+    const streaming = req.query.streaming === 'true';
+    const temperature = req.query.temperature ? parseFloat(req.query.temperature as string) : undefined;
+    const maxTokens = req.query.maxTokens ? parseInt(req.query.maxTokens as string) : undefined;
     
     // Validate the portfolio data
     let portfolioData: PortfolioData;
@@ -38,15 +42,23 @@ router.post('/', async (req: Request, res: Response) => {
     const filename = `${portfolioData.personalInfo.name.replace(/\s+/g, '_')}_${timestamp}`;
     const outputPath = path.join(OUTPUT_DIR, `${filename}.zip`);
     
-    console.log(`Generating portfolio with provider: ${provider}, style: ${style}`);
+    console.log(`Generating portfolio with provider: ${provider}, style: ${style}, model: ${model || 'default'}`);
     
-    // Generate the portfolio website
+    // Create conversation context for this generation
+    const contextId = llmService.createConversationContext(provider, model);
+    
+    // Generate the portfolio website with enhanced options
     const generatedPortfolio = await llmService.generatePortfolio(
       portfolioData,
       {
         provider: provider as any,
         style: style as any,
-        outputPath
+        outputPath,
+        model,
+        streaming,
+        temperature,
+        maxTokens,
+        contextId
       }
     );
     
@@ -60,7 +72,8 @@ router.post('/', async (req: Request, res: Response) => {
         js: generatedPortfolio.js,
         metadata: generatedPortfolio.metadata
       },
-      downloadUrl: `/api/generate/download/${filename}.zip`
+      downloadUrl: `/api/generate/download/${filename}.zip`,
+      contextId // Return context ID for potential follow-up requests
     });
   } catch (e) {
     const error = e as any;
@@ -131,48 +144,38 @@ router.get('/styles', (req: Request, res: Response) => {
   }
 });
 
-// Route to get available LLM providers
+// Route to get available LLM providers with enhanced information
 router.get('/providers', (req: Request, res: Response) => {
-  const providers = [
-    {
-      name: 'openai',
-      displayName: 'OpenAI GPT-4',
-      available: !!process.env.OPENAI_API_KEY,
-      description: 'Advanced AI model with excellent creative writing capabilities'
-    },
-    {
-      name: 'gemini',
-      displayName: 'Google Gemini',
-      available: !!process.env.GEMINI_API_KEY,
-      description: 'Google\'s powerful multimodal AI model'
-    },
-    {
-      name: 'anthropic',
-      displayName: 'Anthropic Claude',
-      available: !!process.env.ANTHROPIC_API_KEY,
-      description: 'Claude AI with strong reasoning and safety features'
-    },
-    {
-      name: 'ollama',
-      displayName: 'Ollama (Local)',
-      available: !!process.env.OLLAMA_HOST,
-      description: 'Local AI model for privacy-focused generation'
-    },
-    {
-      name: 'deepseek',
-      displayName: 'DeepSeek Coder',
-      available: !!process.env.DEEPSEEK_API_KEY,
-      description: 'DeepSeek AI model specialized in coding and technical content'
-    },
-    {
-      name: 'openrouter',
-      displayName: 'OpenRouter (Multi-Model)',
-      available: !!process.env.OPENROUTER_API_KEY,
-      description: 'Access to multiple AI models through OpenRouter API'
-    }
-  ];
-  
-  res.json({ providers });
+  try {
+    const providers = llmService.getAvailableProviders().map(({ name, config, available }) => ({
+      name,
+      displayName: config.name,
+      available,
+      description: getProviderDescription(name),
+      models: config.supportedModels,
+      defaultModel: config.defaultModel,
+      maxTokens: config.maxTokens,
+      supportsStreaming: config.supportsStreaming,
+      rateLimits: config.rateLimits
+    }));
+    
+    res.json({ providers });
+  } catch (error) {
+    console.error('Error getting providers:', error);
+    res.status(500).json({ error: 'Failed to get providers' });
+  }
+});
+
+// Route to get provider status and rate limits
+router.get('/providers/:provider/status', (req: Request, res: Response) => {
+  try {
+    const provider = req.params.provider;
+    const status = llmService.getProviderStatus(provider);
+    res.json(status);
+  } catch (error) {
+    console.error('Error getting provider status:', error);
+    res.status(500).json({ error: 'Failed to get provider status' });
+  }
 });
 
 // Route to preview a style without generating full portfolio
@@ -237,6 +240,122 @@ router.post('/preview', async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to generate preview', message: error.message });
   }
 });
+
+// New routes for enhanced LLM features
+
+// Route for streaming portfolio generation
+router.post('/stream', async (req: Request, res: Response) => {
+  try {
+    // Set up Server-Sent Events
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Cache-Control'
+    });
+
+    const provider = (req.query.provider as string) || 'openai';
+    const style = (req.query.style as string) || 'minimal';
+    const model = req.query.model as string;
+
+    let portfolioData: PortfolioData;
+    try {
+      portfolioData = PortfolioSchema.parse(req.body);
+    } catch (validationError) {
+      res.write(`data: ${JSON.stringify({ type: 'error', data: { message: 'Invalid portfolio data' } })}\n\n`);
+      res.end();
+      return;
+    }
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `${portfolioData.personalInfo.name.replace(/\s+/g, '_')}_${timestamp}`;
+    const outputPath = path.join(OUTPUT_DIR, `${filename}.zip`);
+
+    // Generate with streaming
+    const result = await llmService.generateStreamingPortfolio(
+      portfolioData,
+      {
+        provider: provider as any,
+        style: style as any,
+        outputPath,
+        model,
+        streaming: true
+      },
+      (progress) => {
+        res.write(`data: ${JSON.stringify(progress)}\n\n`);
+      }
+    );
+
+    // Send final result
+    res.write(`data: ${JSON.stringify({
+      type: 'complete',
+      data: {
+        portfolio: result,
+        downloadUrl: `/api/generate/download/${filename}.zip`
+      }
+    })}\n\n`);
+    
+    res.end();
+  } catch (error) {
+    console.error('Error in streaming generation:', error);
+    res.write(`data: ${JSON.stringify({ type: 'error', data: { message: (error as Error).message } })}\n\n`);
+    res.end();
+  }
+});
+
+// Route to get conversation context
+router.get('/context/:contextId', (req: Request, res: Response) => {
+  try {
+    const contextId = req.params.contextId;
+    const context = llmService.getConversationContext(contextId);
+    
+    if (!context) {
+      return res.status(404).json({ error: 'Context not found' });
+    }
+    
+    res.json({ context });
+  } catch (error) {
+    console.error('Error getting context:', error);
+    res.status(500).json({ error: 'Failed to get context' });
+  }
+});
+
+// Route to clear cache
+router.post('/cache/clear', (req: Request, res: Response) => {
+  try {
+    llmService.clearCache();
+    res.json({ success: true, message: 'Cache cleared successfully' });
+  } catch (error) {
+    console.error('Error clearing cache:', error);
+    res.status(500).json({ error: 'Failed to clear cache' });
+  }
+});
+
+// Route to get cache stats
+router.get('/cache/stats', (req: Request, res: Response) => {
+  try {
+    const stats = llmService.getCacheStats();
+    res.json(stats);
+  } catch (error) {
+    console.error('Error getting cache stats:', error);
+    res.status(500).json({ error: 'Failed to get cache stats' });
+  }
+});
+
+function getProviderDescription(provider: string): string {
+  const descriptions: Record<string, string> = {
+    openai: 'Advanced AI model with excellent creative writing capabilities',
+    gemini: 'Google\'s powerful multimodal AI model',
+    anthropic: 'Claude AI with strong reasoning and safety features',
+    ollama: 'Local AI model for privacy-focused generation',
+    openrouter: 'Access to multiple AI models through OpenRouter API',
+    cohere: 'Cohere\'s command models for text generation',
+    mistral: 'Mistral AI\'s efficient and powerful language models'
+  };
+  
+  return descriptions[provider] || 'AI language model for portfolio generation';
+}
 
 function getStyleDescription(style: string): string {
   const descriptions: Record<string, string> = {
